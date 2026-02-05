@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from models.Pydantic_model_for_Nipah_virus import Pydantic_model_for_Nipah_virus
 import pandas as pd
 import numpy as np
@@ -56,3 +57,20 @@ def predictoin_pipeline(user:Pydantic_model_for_Nipah_virus):
     #Lets Use the StandardScaler for the Scal Down the data
     scaled_data = std.transform(data)
 
+    #Lets Predict the Models Results.
+
+    #Using the LogisticRegressor
+    lr_prediction = int(round(lr.predict(scaled_data),0))
+
+    #Using XGBooster
+    xgb_prediction = int(round(xgb.predict(scaled_data),0))
+
+    lr_prediction_result ="Patient is likely to have Nipah Virus." if lr_prediction == 1 else "Patient is unlikely to have Nipah Virus."
+
+    xgb_prediction_result = "Patient is likely to have Nipah Virus." if xgb_prediction == 1 else "Patient is unlikely to have Nipah Virus."
+
+    return JSONResponse(status_code=200, 
+                        content={
+                                "Logistic_Regressor Model Prediction":f"{lr_prediction_result}",
+                                "XGBooster Model Prediction":f"{xgb_prediction_result}"
+                        })
