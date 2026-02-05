@@ -47,8 +47,12 @@ def predictoin_pipeline(user:Pydantic_model_for_Nipah_virus):
     "pig_or_bat_contact":user.pig_or_bat_contact
     }])
 
-#Convert the Categorical data into the lower charecter.
-lowercase(temp2)
+    #Convert the Categorical data into the lower charecter.
+    lowercase(temp2)
 
-#Lets scal down the all the datasets.
-encod_field(data)
+    #Lets scal down the all the datasets.
+    encod_field(temp2)
+
+    #Lets Use the StandardScaler for the Scal Down the data
+    scaled_data = std.transform(data)
+
