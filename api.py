@@ -1,30 +1,32 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from models.Pydantic_model_for_Nipah_virus import Pydantic_model_for_Nipah_virus
+from models.Pydantic_model_for_Nipah_virus import Nipah_Userinput
 import pandas as pd
 import numpy as np
 import pickle
-from main import lowercase,encod_field
+
+try:
+    with open("models/pickle_model_of_Nipah_virus_pipelines.pkl","rb") as f:
+        model = pickle.load(f)
+
+    temp2 = model['temp2']
+    encoder = model['encoder']
+    lb = model['lbelencoder']
+    std = model['standardscaler']
+    lr = model['logisticregression']
+    xgb = model['xgbooster']
+
+except FileNotFoundError as e:
+    print(f"Error : {e}")
 
 app = FastAPI(title="Nipah Virus Fast Apis Prediction Pipeline.")
-
-with open("/models/pickle_model_of_Nipah_virus_pipelines.pkl","rb") as f:
-    model = pickle.load(f)
-
-temp2 = model['temp2']
-encoder = model['encoder']
-lb = model['lbelencoder']
-std = model['standardscaler']
-lr = model['logisticregression']
-xgb = model['xgbooster']
-
 
 @app.get("/")
 def default():
     return {"message":"This is the Nipah Virus ML Pipeline", "Developer":"Ravi Der"}
 
 @app.post("/nipah_prediction")
-def predictoin_pipeline(user:Pydantic_model_for_Nipah_virus):
+def predictoin_pipeline(user:Nipah_Userinput):
     data = pd.DataFrame([{
     "age":user.age,
     "gender":user.gender,
@@ -49,10 +51,16 @@ def predictoin_pipeline(user:Pydantic_model_for_Nipah_virus):
     }])
 
     #Convert the Categorical data into the lower charecter.
-    lowercase(temp2)
+    def lowercase1(low):
+        for i in low:
+            data[i] = data[i][0].lower()
+    lowercase1(temp2)
 
     #Lets scal down the all the datasets.
-    encod_field(temp2)
+    def encod_field1(encod):
+        for i in encod:
+            data[i] = encoder[i].transform(data[i])
+    encod_field1(temp2)
 
     #Lets Use the StandardScaler for the Scal Down the data
     scaled_data = std.transform(data)
@@ -60,10 +68,10 @@ def predictoin_pipeline(user:Pydantic_model_for_Nipah_virus):
     #Lets Predict the Models Results.
 
     #Using the LogisticRegressor
-    lr_prediction = int(round(lr.predict(scaled_data),0))
+    lr_prediction = int(round(lr.predict(scaled_data)[0],0))
 
     #Using XGBooster
-    xgb_prediction = int(round(xgb.predict(scaled_data),0))
+    xgb_prediction = int(round(xgb.predict(scaled_data)[0],0))
 
     lr_prediction_result ="Patient is likely to have Nipah Virus." if lr_prediction == 1 else "Patient is unlikely to have Nipah Virus."
 
