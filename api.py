@@ -6,9 +6,9 @@ import numpy as np
 import pickle
 
 try:
-    with open("models/pickle_model_of_Nipah_virus_pipelines.pkl","rb") as f:
-        model = pickle.load(f)
-
+    with open("Model/customer_churn_pikle_model.pkl","rb") as f:
+        model=pickle.load(f)
+        
     temp2 = model['temp2']
     encoder = model['encoder']
     lb = model['lbelencoder']
